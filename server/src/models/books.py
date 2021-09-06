@@ -8,10 +8,10 @@ class Books(Base):
     __tablename__ = "books"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True, nullable=False)
-    name = Column(String(255), index=True, nullable=False)
+    title = Column(String(255), index=True, nullable=False)
     author = Column(String(255), index=True, nullable=False)
     read = Column(Boolean, default=False, nullable=False)
-    owner_user = Column(Integer, ForeignKey("users.id"))
+    owner_user = Column(Integer, ForeignKey("users.id"), nullable=False)
     
     user = relationship("User", back_populates="user_books")
     

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 from src.schemas.books import *
 
@@ -14,7 +14,7 @@ class User(UserBase):
     id: int
 
 class UserComplete(User):
-    books: List[Book]
+    books: Optional[List[Book]] = None
 
 
 class Status(BaseModel):

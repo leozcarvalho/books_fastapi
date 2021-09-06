@@ -5,17 +5,14 @@ class BookBase(BaseModel):
     author: str
     read: bool
 
+    class Config:
+	    orm_mode=True
+
 class Book(BookBase):
     id: int
 
-    class Config:
-	    orm_mode=True
-
 class BookComplete(BookBase):
-    owner_id: int
-
-    class Config:
-	    orm_mode=True
+    owner_user: int
 
 class Status(BaseModel):
     message: str

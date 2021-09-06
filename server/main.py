@@ -17,3 +17,4 @@ app.add_middleware(
 )
 
 from src.routes import users
+from src.routes import books
