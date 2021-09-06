@@ -14,7 +14,7 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/books{user_id}", tags=["books"])
+@app.get("/books/{user_id}", tags=["books"])
 def get_books(user_id: int, db: Session = Depends(get_db)):
     db_books = books_crud.get_books(db=db, user_id=user_id)
     if db_books:
