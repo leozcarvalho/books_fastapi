@@ -17,6 +17,13 @@ def register_user(db: Session, user: user_schema.UserBase):
     db.commit()
     db.refresh(db_user)
     return db_user
+    
+def update_user(db: Session, user_id: int, user: user_schema.UserBase):
+    user_dict = user.dict()
+    db.query(user_model.User).filter(user_model.User.id == user_id).update(user_dict)
+    user_dict['id'] = user_id
+    db.commit()
+    return user_dict
 
 def delete_user(db: Session, user_id: int):
     db_user = get_user_by_id(db=db, user_id=user_id)

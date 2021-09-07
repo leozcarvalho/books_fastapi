@@ -47,3 +47,16 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
         return user_schemas.Status(message="The User was successfully deleted")
     
     raise HTTPException(status_code=404, detail="User not found")
+
+@app.put("/user/update/{user_id}", tags=["users"], response_model= user_schemas.UserBase)
+def update_user(user_id: int ,user: user_schemas.UserBase = Body(..., embed=True), db: Session = Depends(get_db)):
+    db_user = user_crud.get_user_by_id(db=db, user_id=user_id)
+    if db_user:
+        db_user = user_crud.update_user(db=db, user_id=user_id, user=user)
+        response = {
+            'status': 'sucess updated',
+            'user': jsonable_encoder(db_user)
+            }
+        return JSONResponse(content=response)
+    
+    raise HTTPException(status_code=404, detail="User not found")

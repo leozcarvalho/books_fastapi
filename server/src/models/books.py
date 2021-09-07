@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy.sql.expression import delete
 from sqlalchemy.sql.schema import ForeignKey
 from src.models.users import *
 from sqlalchemy.orm import relationship
@@ -12,6 +13,4 @@ class Books(Base):
     author = Column(String(255), index=True, nullable=False)
     read = Column(Boolean, default=False, nullable=False)
     owner_user = Column(Integer, ForeignKey("users.id"), nullable=False)
-    
-    user = relationship("User", back_populates="user_books")
     

@@ -4,27 +4,34 @@
     <div class="row mb-5">
         <div class="col-md-4">
             <h1>Usuários</h1>
+            <hr><br><br>
         </div>
-        <div class="col-md-3 offset-2">
+        <div class="col-md-4 offset-2">
           <b-form-select v-model="user" :options="users"></b-form-select>
-        </div>
-        <div class="col-md-1" v-if = "user">
-          <b-button variant="danger"
-          size = "sm"
-          @click = "delUser"
-          >Excluir</b-button>
+          <div v-if = "user" class="mt-2 float-right">
+            <b-button variant="danger"
+            size = "sm"
+            @click = "delUser"
+            >Excluir</b-button>
+            <b-button variant="warning"
+            size = "sm"
+            class="ml-2"
+            v-b-modal.user-modal
+            @click = "getUser(userId)"
+            >Alterar</b-button>
+          </div>
         </div>
     </div>
         <button type="button" class="btn btn-success btn-sm" v-b-modal.user-modal
+        @click = "method = 'newuser'"
         >Add Usuário</button>
         <br><br>
         <Alert ref= "Alert"></Alert>
         <b-modal
             id="user-modal"
             ref="user-modal"
-            title="Novo Usuário"
+            :title="method === 'newuser' ? 'Novo Usuário': 'Editar Usuario'"
             @hidden="clearForm"
-            @ok="addUser"
             >
             <form ref="form">
                 <b-form-group
@@ -50,6 +57,15 @@
                 ></b-form-input>
                 </b-form-group>
             </form>
+            <template #modal-footer="{ ok, cancel }">
+                    <b-button size="sm" variant="success"
+                        @click="method === 'newuser' ? addUser(): updateUser()">
+                        {{ method === 'newuser' ? 'Salvar': 'Editar' }}
+                    </b-button>
+                    <b-button size="sm" variant="danger" @click="cancel()">
+                        Cancelar
+                    </b-button>
+            </template>
         </b-modal>
     <div class="row">
         <div class="col-md-10">
@@ -59,6 +75,9 @@
   </div>
   <div v-show = "user">
     <Books ref = "Books" :userId = "parseInt(userId, 10)"></Books>
+  </div>
+  <div class="container text-center" v-show = "user === null">
+    <h3>Selecione um usuario para ver os seus livros.</h3>
   </div>
 </div>
 </template>
@@ -79,6 +98,7 @@ export default {
         name: null,
         email: null,
       },
+      method: null,
     };
   },
   components: {
@@ -105,6 +125,40 @@ export default {
         console.error(error);
         });
     },
+    getUser(userId) {
+      const path = `http://localhost:8000/user/${userId}`;
+      axios.get(path)
+        .then((res) => {
+          this.user_form.name = res.data.user.name;
+          this.user_form.email = res.data.user.email;
+        })
+        .catch((error) => {
+        // eslint-disable-next-line
+        console.error(error);
+        });
+    },
+
+    updateUser() {
+      const path = `http://localhost:8000/user/update/${this.userId}`;
+      const payload = {
+        user: {
+          name: this.user_form.name,
+          email: this.user_form.email,
+        },
+      };
+      axios.put(path, payload)
+        .then(() => {
+          this.$bvModal.hide('user-modal');
+          this.getUsers();
+          this.$refs.Alert.showAlert('Usuário Atualizado!', 'primary');
+          this.showMessage = true;
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+          this.getUsers();
+        });
+    },
     clearForm() {
       this.user_form.name = null;
       this.user_form.email = null;
@@ -119,6 +173,7 @@ export default {
       };
       axios.post(path, payload)
         .then(() => {
+          this.$bvModal.hide('user-modal');
           this.$refs.Alert.showAlert('Usuário adicionado com sucesso', 'success');
           this.getUsers();
         })
