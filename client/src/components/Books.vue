@@ -33,26 +33,30 @@
                           type="button"
                           class="btn btn-warning btn-sm"
                           v-b-modal.book-modal
-                          @click="editBook(book)">
+                          @click="editBook(book, book.id)">
                       Alterar
                   </button>
                   <b-button type="button" class="btn btn-danger btn-sm"
-                      @click="onShowDelete(book.id)">
+                    @click="onShowDelete(book.id)">
                       Excluir
                   </b-button>
                 </div>
               </td>
             </tr>
           <!--------------------Modal Excluir ------------------------------>
-            <b-modal id="modal-del" hide-footer>
-                    <template>
-                        Confirmar Ação
-                    </template>
-                    <div class="d-block text-center">
-                        <button type="button" class="btn btn-danger btn-lg"
-                        @click ="onDeleteBook">
-                        Excluir</button>
-                    </div>
+            <b-modal id="modal-del" size="sm"
+                title="Atenção"
+                header-bg-variant="warning"
+            >
+                Deseja realmente excluir este Livro?
+                <template #modal-footer="{ ok, cancel }">
+                    <b-button size="sm" variant="danger" @click="removeBook(bookId)">
+                        Excluir
+                    </b-button>
+                    <b-button size="sm" variant="primary" @click="cancel()">
+                        Cancelar
+                    </b-button>
+                </template>
             </b-modal>
           <!------------------------------------------------------------------>
           </tbody>
@@ -107,11 +111,11 @@ export default {
     return {
       books: [],
       BookForm: {
-        id: 'Null',
         title: '',
         author: '',
         read: false,
       },
+      ownerUser: null,
       message: '',
       bookId: '',
       showMessage: false,
@@ -123,12 +127,6 @@ export default {
   },
   components: {
     Alert,
-  },
-  props: {
-    userId: Number,
-  },
-  mounted() {
-    this.getBooks();
   },
   methods: {
     onShowDelete(bookId) {
@@ -146,18 +144,19 @@ export default {
       this.message = message;
     },
     getBooks() {
-      const path = `http://localhost:8000/books/${this.userId}`;
+      const path = `http://localhost:8000/books/${this.ownerUser}`;
       axios.get(path)
         .then((res) => {
           this.books = res.data.books;
         })
         .catch((error) => {
-          // eslint-disable-next-line
+          this.books = [];
+          this.$refs.Alert.showAlert('Este Usuário Ainda nao possui livros cadastrados!', 'danger');
           console.error(error);
         });
     },
     addBook(payload) {
-      const path = 'http://localhost:5000/books';
+      const path = `http://localhost:8000/book/save/${this.ownerUser}`;
       axios.post(path, payload)
         .then(() => {
           this.getBooks();
@@ -171,7 +170,7 @@ export default {
         });
     },
     updateBook(payload, bookID) {
-      const path = `http://localhost:5000/books/${bookID}`;
+      const path = `http://localhost:8000/book/update/${bookID}`;
       axios.put(path, payload)
         .then(() => {
           this.getBooks();
@@ -188,7 +187,7 @@ export default {
       this.BookForm.title = '';
       this.BookForm.author = '';
       this.BookForm.read = false;
-      this.BookForm.id = '';
+      this.bookId = null;
     },
     onSubmit(evt) {
       evt.preventDefault();
@@ -198,14 +197,18 @@ export default {
         read = true;
       }
       const payload = {
-        title: this.BookForm.title,
-        author: this.BookForm.author,
-        read, // property shorthand
+        book:
+            {
+              title: this.BookForm.title,
+              author: this.BookForm.author,
+              read, // property shorthand
+            },
       };
       if (this.tituloModal === 'Adicionar Livro') {
+        payload.owner_user = this.owner_user;
         this.addBook(payload);
       } else {
-        this.updateBook(payload, this.BookForm.id);
+        this.updateBook(payload, this.bookId);
       }
       this.initForm();
     },
@@ -214,10 +217,11 @@ export default {
       this.$refs.BookModal.hide();
       this.initForm();
     },
-    editBook(book) {
+    editBook(book, bookId) {
       this.tituloModal = 'Alterar';
       this.botao = 'Atualizar';
       this.BookForm = book;
+      this.bookId = bookId;
     },
     onResetUpdate(evt) {
       evt.preventDefault();
@@ -226,9 +230,10 @@ export default {
       this.getBooks(); // why?
     },
     removeBook(bookID) {
-      const path = `http://localhost:5000/books/${bookID}`;
+      const path = `http://localhost:8000/book/delete/${bookID}`;
       axios.delete(path)
         .then(() => {
+          this.$bvModal.hide('modal-del');
           this.getBooks();
           this.$refs.Alert.showAlert('Livro Removido!', 'danger');
           this.showMessage = true;
@@ -238,10 +243,6 @@ export default {
           console.error(error);
           this.getBooks();
         });
-    },
-    onDeleteBook() {
-      this.removeBook(this.bookId);
-      this.$bvModal.hide('modal-del');
     },
   },
 };

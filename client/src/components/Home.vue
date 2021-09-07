@@ -50,7 +50,6 @@
                 ></b-form-input>
                 </b-form-group>
             </form>
-            {{userId}}
         </b-modal>
     <div class="row">
         <div class="col-md-10">
@@ -58,8 +57,8 @@
         </div>
     </div>
   </div>
-  <div v-if = "user">
-    <Books :userId = "parseInt(userId, 10)"></Books>
+  <div v-show = "user">
+    <Books ref = "Books" :userId = "parseInt(userId, 10)"></Books>
   </div>
 </div>
 </template>
@@ -118,7 +117,6 @@ export default {
           email: this.user_form.email,
         },
       };
-      console.log(payload);
       axios.post(path, payload)
         .then(() => {
           this.$refs.Alert.showAlert('Usuário adicionado com sucesso', 'success');
@@ -146,6 +144,8 @@ export default {
   watch: {
     user() {
       [this.userId] = this.user.split('-');
+      this.$refs.Books.ownerUser = this.userId;
+      this.$refs.Books.getBooks();
     },
   },
 };
