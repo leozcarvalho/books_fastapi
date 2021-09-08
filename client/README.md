@@ -1,11 +1,8 @@
 # client
 
-## Project setup
+## Project inicial setup
 ```
 npm install
-npm install bootstrap@4.6.0 --save
-npm install axios@0.21.1 --save
-npm install bootstrap-vue@2.21.2 --save
 
 ```
 
