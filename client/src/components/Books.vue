@@ -8,6 +8,9 @@
         <button type="button" class="btn btn-success btn-sm" v-b-modal.book-modal
         @click="onShowModalInsert">Add Livro</button>
         <br><br>
+        <b-spinner v-if = "loading"
+        class = "offset-5 mt-3" style="width: 5rem; height: 5rem;"
+        label="Large Spinner"></b-spinner>
         <table class="table table-hover">
           <thead>
             <tr>
@@ -18,7 +21,7 @@
             </tr>
           </thead>
           <tbody>
-            <h3 v-if = "this.books.length === 0" >
+            <h3 v-if = "books.length === 0" >
               Você não possui livros adicionados.</h3>
             <tr  v-for="(book, index) in books" :key="index">
               <td>{{ book.title }}</td>
@@ -123,6 +126,7 @@ export default {
       tituloModal: '',
       variant: '',
       botao: '',
+      loading: false,
     };
   },
   components: {
@@ -145,12 +149,15 @@ export default {
     },
     getBooks() {
       const path = `http://localhost:8000/books/${this.ownerUser}`;
+      this.loading = true;
       axios.get(path)
         .then((res) => {
           this.books = res.data.books;
+          this.loading = false;
         })
         .catch((error) => {
           this.books = [];
+          this.loading = false;
           this.$refs.Alert.showAlert('Este Usuário Ainda nao possui livros cadastrados!', 'danger');
           console.error(error);
         });
